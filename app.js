@@ -12,6 +12,19 @@ mongoose.Promise = require('bluebird');
 const app = express();
 
 app.use('/static', express.static('static'));
+
+passport.use(new BasicStrategy(
+  function(username, password, done) {
+    Users.findOne({username: username, password: password}).then(function(user) {
+      if(!user) {
+        return done(null, false);
+      } else {
+        return done(null, username);
+      }
+    });
+  }
+));
+
 app.use((req, res, next) => {
   passport.authenticate('basic', {session: false});
   next();
@@ -51,16 +64,26 @@ app.get('/api/activities/:id', (req, res) => {
 
 // Update one activity I am tracking, changing attributes such as name or type. Does not allow for changing tracked data.
 app.patch('/api/activities/:id', (req, res) => {
-
+  let id = req.params.id;
+  let activityName = req.body.activity;
+  Activities.findOne({_id: id}).then((result) => {
+    result.activityName = activityName;
+    result.save();
+    res.json(result);
+  });
 });
+
 
 // Delete one activity I am tracking. This should remove tracked data for that activity as well.
 app.delete('/api/activities/:id', (req, res) => {
-
+  let id = req.params.id;
+  Activities.deleteOne({_id: id}).then((result) => {
+    res.json({});
+  });
 });
 
 // Add tracked data for a day. The data sent with this should include the day tracked. You can also override the data for a day already recorded.
-app.put('/api/activities/:id', (req, res) => {
+app.post('/api/activities/:id', (req, res) => {
 
 });
 
