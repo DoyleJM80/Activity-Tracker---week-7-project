@@ -36,14 +36,14 @@ mongoose.connect('mongodb://localhost:27017/stats');
 
 
 // Show a list of all activities I am tracking, and links to their individual pages
-app.get('/api/activities', (req, res) => {
+app.get('/api/activities', passport.authenticate('basic', {session: false}), (req, res) => {
   Activities.find({}).then((result) => {
     res.json(result);
   });
 });
 
 // Create a new activity for me to track.
-app.post('/api/activities', (req, res) => {
+app.post('/api/activities', passport.authenticate('basic', {session: false}), (req, res) => {
   const activity = new Activities({
     activityName: req.body.activity,
     data: [{
@@ -55,7 +55,7 @@ app.post('/api/activities', (req, res) => {
 });
 
 // Show information about one activity I am tracking, and give me the data I have recorded for that activity.
-app.get('/api/activities/:id', (req, res) => {
+app.get('/api/activities/:id', passport.authenticate('basic', {session: false}), (req, res) => {
   var id = req.params.id;
   Activities.findOne({_id: id}).then((result) => {
     res.json({result});
@@ -63,7 +63,7 @@ app.get('/api/activities/:id', (req, res) => {
 });
 
 // Update one activity I am tracking, changing attributes such as name or type. Does not allow for changing tracked data.
-app.patch('/api/activities/:id', (req, res) => {
+app.patch('/api/activities/:id', passport.authenticate('basic', {session: false}), (req, res) => {
   let id = req.params.id;
   let activityName = req.body.activityName;
   Activities.findOne({_id: id}).then((result) => {
@@ -75,7 +75,7 @@ app.patch('/api/activities/:id', (req, res) => {
 
 
 // Delete one activity I am tracking. This should remove tracked data for that activity as well.
-app.delete('/api/activities/:id', (req, res) => {
+app.delete('/api/activities/:id', passport.authenticate('basic', {session: false}), (req, res) => {
   let id = req.params.id;
   Activities.deleteOne({_id: id}).then((result) => {
     res.json({});
@@ -83,7 +83,7 @@ app.delete('/api/activities/:id', (req, res) => {
 });
 
 // Add tracked data for a day. The data sent with this should include the day tracked. You can also override the data for a day already recorded.
-app.post('/api/activities/:id', (req, res) => {
+app.post('/api/activities/:id', passport.authenticate('basic', {session: false}), (req, res) => {
   let id = req.params.id;
   let date = req.body.date;
   let amount = req.body.amount;
@@ -98,10 +98,9 @@ app.post('/api/activities/:id', (req, res) => {
 });
 
 // Remove tracked data for a day.
-app.delete('/api/stats/:id', (req, res) => {
+app.delete('/api/stats/:id', passport.authenticate('basic', {session: false}), (req, res) => {
   let id = req.params.id;
   let dataId = req.body.dataId;
-  let date = req.body.date;
   Activities.update({_id: id}, {$pull: {data: {_id: dataId}}}).then((result) => {
     res.json(result);
   });
@@ -112,7 +111,7 @@ app.listen(3000, () => {
 });
 
 // const activity = new Activities({
-//   activityName: 'Push-ups',
+//   activityName: 'Pull-ups',
 //   data: [{
 //     amount: 36
 //   }]
