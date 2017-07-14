@@ -65,7 +65,7 @@ app.get('/api/activities/:id', (req, res) => {
 // Update one activity I am tracking, changing attributes such as name or type. Does not allow for changing tracked data.
 app.patch('/api/activities/:id', (req, res) => {
   let id = req.params.id;
-  let activityName = req.body.activity;
+  let activityName = req.body.activityName;
   Activities.findOne({_id: id}).then((result) => {
     result.activityName = activityName;
     result.save();
@@ -84,12 +84,27 @@ app.delete('/api/activities/:id', (req, res) => {
 
 // Add tracked data for a day. The data sent with this should include the day tracked. You can also override the data for a day already recorded.
 app.post('/api/activities/:id', (req, res) => {
-
+  let id = req.params.id;
+  let date = req.body.date;
+  let amount = req.body.amount;
+  Activities.findOne({_id: id}).then((result) => {
+    result.data.push({
+      date: date,
+      amount: amount
+    });
+    result.save();
+    res.json(result);
+  });
 });
 
 // Remove tracked data for a day.
-app.delete('/api/activities/:id', (req, res) => {
-
+app.delete('/api/stats/:id', (req, res) => {
+  let id = req.params.id;
+  let dataId = req.body.dataId;
+  let date = req.body.date;
+  Activities.update({_id: id}, {$pull: {data: {_id: dataId}}}).then((result) => {
+    res.json(result);
+  });
 });
 
 app.listen(3000, () => {
@@ -97,7 +112,7 @@ app.listen(3000, () => {
 });
 
 // const activity = new Activities({
-//   activityName: 'push-ups',
+//   activityName: 'Push-ups',
 //   data: [{
 //     amount: 36
 //   }]
