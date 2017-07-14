@@ -97,6 +97,39 @@ app.post('/api/activities/:id', passport.authenticate('basic', {session: false})
   });
 });
 
+app.post('/api/activities/:id/stats', passport.authenticate('basic', {session: false}), (req, res) => {
+  var id = req.params.id;
+  var newDate = req.body.date;
+  var newDateObject = new Date(newDate);
+  var newAmount = req.body.amount;
+
+  Activities.findOne({_id: id}).then((item) => {
+    for(var i = 0; i < item.data.length; i++) {
+      var dbDate = item.data[i].date;
+      if (dbDate.getTime() === newDateObject.getTime()) {
+        console.log('working!');
+        item.data[i].amount = newAmount;
+        console.log('replaced amount ', item.data[i].amount);
+        item.save().then(() => {
+          res.json(item);
+        });
+        return;
+      } else {
+        console.log('not going to replace');
+        item.data.push({
+          date: newDate,
+          amount: newAmount
+        });
+        item.save().then(() => {
+          console.log('pushed and saved');
+          res.json({});
+        });
+        return;
+      }
+    }
+  });
+});
+
 // Remove tracked data for a day.
 app.delete('/api/stats/:id', passport.authenticate('basic', {session: false}), (req, res) => {
   let id = req.params.id;
